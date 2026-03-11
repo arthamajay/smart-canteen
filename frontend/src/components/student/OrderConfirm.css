@@ -1,0 +1,194 @@
+.order-confirm {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin: 0 auto 20px;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.confirm-title {
+  color: #28a745;
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+/* Order Details */
+.order-details {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  border: 2px solid #e0e0e0;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.detail-value.order-id {
+  color: #667eea;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.detail-value.amount {
+  color: #28a745;
+  font-size: 20px;
+}
+
+.detail-value.status {
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.status-paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-created {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* QR Section */
+.qr-section {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  border: 3px dashed #667eea;
+}
+
+.qr-title {
+  color: #333;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.qr-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+}
+
+.qr-image {
+  display: block;
+  width: 250px;
+  height: 250px;
+  border-radius: 5px;
+}
+
+.qr-hint {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Action Buttons */
+.action-buttons {
+  margin-bottom: 30px;
+}
+
+.action-buttons .btn {
+  padding: 15px 40px;
+  font-size: 18px;
+}
+
+/* Instructions */
+.instructions {
+  background: #e7f3ff;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: left;
+  border: 2px solid #b3d9ff;
+}
+
+.instructions h4 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.instructions ol {
+  margin: 0;
+  padding-left: 25px;
+}
+
+.instructions li {
+  color: #555;
+  font-size: 16px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.instructions li:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .order-confirm {
+    padding: 0 10px;
+  }
+
+  .confirm-title {
+    font-size: 24px;
+  }
+
+  .qr-image {
+    width: 200px;
+    height: 200px;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}

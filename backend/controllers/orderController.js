@@ -1,6 +1,8 @@
 const Order = require('../models/Order');
 const Item = require('../models/Item');
+const Inventory = require('../models/Inventory');
 const Payment = require('../models/Payment');
+const db = require('../config/database');
 const { generateQRCode } = require('../utils/qrGenerator');
 const { validateOrderItems, isValidStatusTransition } = require('../utils/validators');
 
@@ -23,13 +25,21 @@ const createOrder = async (req, res, next) => {
       throw error;
     }
 
-    // Check item availability and stock
-    const dbItems = await Item.checkAvailability(items);
+    // Check item availability (without locking)
+    const availabilityCheck = await Inventory.checkAvailability(items);
+    
+    if (!availabilityCheck.allValid) {
+      const invalidItems = availabilityCheck.items.filter(i => !i.valid);
+      const errorMessages = invalidItems.map(i => `${i.name || 'Item ' + i.item_id}: ${i.reason}`);
+      const error = new Error(errorMessages.join('; '));
+      error.statusCode = 400;
+      throw error;
+    }
 
     // Calculate total amount and prepare items with prices
     let totalAmount = 0;
     const orderItems = items.map(orderItem => {
-      const dbItem = dbItems.find(i => i.item_id === orderItem.item_id);
+      const dbItem = availabilityCheck.dbItems.find(i => i.item_id === orderItem.item_id);
       const subtotal = dbItem.price * orderItem.quantity;
       totalAmount += subtotal;
 
@@ -41,7 +51,7 @@ const createOrder = async (req, res, next) => {
       };
     });
 
-    // Create order
+    // Create order (this will reserve stock atomically)
     const order = await Order.create(user_id, orderItems, totalAmount);
 
     res.status(201).json({
@@ -122,11 +132,9 @@ const verifyOrder = async (req, res, next) => {
     // Mark order as consumed
     const updatedOrder = await Order.updateStatus(order_id, 'CONSUMED');
 
-    // Deduct stock for each item
-    const orderItems = await Order.getOrderItems(order_id);
-    for (const item of orderItems) {
-      await Item.updateStock(item.item_id, item.quantity);
-    }
+    // Note: Stock was already deducted during order creation
+    // This is the new behavior in Phase 4 - stock is reserved immediately
+    // No need to deduct again here
 
     res.status(200).json({
       success: true,
@@ -143,8 +151,64 @@ const verifyOrder = async (req, res, next) => {
   }
 };
 
+// Get order history for current user
+const getOrderHistory = async (req, res, next) => {
+  try {
+    const userId = req.user.user_id;
+
+    const query = `
+      SELECT 
+        o.order_id,
+        o.user_id,
+        o.total_amount,
+        o.status,
+        o.qr_code_data,
+        o.created_at,
+        o.consumed_at,
+        p.payment_ref,
+        p.status as payment_status
+      FROM orders o
+      LEFT JOIN payments p ON o.order_id = p.order_id
+      WHERE o.user_id = $1
+      ORDER BY o.created_at DESC
+    `;
+
+    const result = await db.query(query, [userId]);
+    const orders = result.rows;
+
+    // Get items for each order
+    for (let order of orders) {
+      const itemsQuery = `
+        SELECT 
+          oi.order_item_id,
+          oi.item_id,
+          oi.quantity,
+          oi.price_at_order,
+          oi.subtotal,
+          i.name as item_name,
+          i.category
+        FROM order_items oi
+        JOIN items i ON oi.item_id = i.item_id
+        WHERE oi.order_id = $1
+      `;
+      
+      const itemsResult = await db.query(itemsQuery, [order.order_id]);
+      order.items = itemsResult.rows;
+    }
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      data: orders
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderById,
   verifyOrder,
+  getOrderHistory,
 };

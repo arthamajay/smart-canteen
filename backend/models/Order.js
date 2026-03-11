@@ -1,12 +1,16 @@
 const db = require('../config/database');
+const Inventory = require('./Inventory');
 
 class Order {
-  // Create new order with items
+  // Create new order with items (with stock reservation)
   static async create(userId, items, totalAmount) {
     const client = await db.getClient();
     
     try {
       await client.query('BEGIN');
+
+      // Reserve stock first (with row locking to prevent race conditions)
+      await Inventory.reserveStock(items, client);
 
       // Insert order
       const orderQuery = `
@@ -45,6 +49,7 @@ class Order {
       };
     } catch (error) {
       await client.query('ROLLBACK');
+      // Stock is automatically rolled back with the transaction
       throw error;
     } finally {
       client.release();

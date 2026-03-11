@@ -1,0 +1,270 @@
+.verify-result {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.result-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  margin: 0 auto 25px;
+  animation: scaleIn 0.5s ease-out;
+}
+
+.result-icon.success {
+  background: #28a745;
+  color: white;
+}
+
+.result-icon.error {
+  background: #dc3545;
+  color: white;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.result-title {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.result-title.success {
+  color: #28a745;
+}
+
+.result-title.error {
+  color: #dc3545;
+}
+
+.result-message {
+  font-size: 18px;
+  padding: 15px 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.result-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 2px solid #c3e6cb;
+}
+
+.result-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 2px solid #f5c6cb;
+}
+
+/* Order Info */
+.order-info {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  text-align: left;
+  border: 2px solid #e0e0e0;
+}
+
+.order-info h3 {
+  color: #333;
+  font-size: 22px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.info-label {
+  display: block;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.info-value {
+  display: block;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.info-value.status {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.status-consumed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-paid {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.status-created {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Items Section */
+.items-section {
+  margin-top: 20px;
+}
+
+.items-section h4 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.items-list {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-name {
+  flex: 1;
+  color: #333;
+  font-weight: 500;
+}
+
+.item-quantity {
+  color: #666;
+  margin: 0 15px;
+}
+
+.item-subtotal {
+  color: #667eea;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Action Buttons */
+.action-buttons {
+  margin-bottom: 30px;
+}
+
+.action-buttons .btn {
+  padding: 15px 40px;
+  font-size: 18px;
+}
+
+/* Instructions */
+.success-instructions,
+.error-instructions {
+  padding: 25px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.success-instructions {
+  background: #d4edda;
+  border: 2px solid #c3e6cb;
+}
+
+.error-instructions {
+  background: #f8d7da;
+  border: 2px solid #f5c6cb;
+}
+
+.success-instructions h4,
+.error-instructions h4 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.success-instructions p {
+  color: #155724;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.success-instructions p:last-child {
+  margin-bottom: 0;
+}
+
+.error-instructions ul {
+  margin: 0;
+  padding-left: 25px;
+}
+
+.error-instructions li {
+  color: #721c24;
+  font-size: 16px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.error-instructions li:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .result-title {
+    font-size: 24px;
+  }
+
+  .result-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 48px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .item-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .item-name {
+    flex-basis: 100%;
+  }
+}

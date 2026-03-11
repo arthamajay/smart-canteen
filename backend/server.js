@@ -3,9 +3,11 @@ const cors = require('cors');
 require('dotenv').config();
 
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const authRoutes = require('./routes/authRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 
 // Initialize Express app
 const app = express();
@@ -38,9 +40,11 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // 404 handler
 app.use(notFound);
