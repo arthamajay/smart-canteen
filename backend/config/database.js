@@ -9,6 +9,8 @@ const poolConfig = process.env.DATABASE_URL
   ? {
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
+      // Force IPv4 to avoid ENETUNREACH on IPv6-only hosts
+      family: 4,
     }
   : {
       host: process.env.DB_HOST,
@@ -17,6 +19,7 @@ const poolConfig = process.env.DATABASE_URL
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       ssl: { rejectUnauthorized: false },
+      family: 4,
     };
 
 const pool = new Pool({
