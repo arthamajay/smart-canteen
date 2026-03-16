@@ -73,6 +73,14 @@ app.listen(PORT, () => {
   console.log(`📡 Listening on port ${PORT}`);
   console.log(`🌐 API URL: http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  // Log DB config (masked) to confirm env vars are loaded
+  const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl) {
+    const masked = dbUrl.replace(/:([^:@]+)@/, ':****@');
+    console.log(`🗄️  DATABASE_URL: ${masked}`);
+  } else {
+    console.log(`🗄️  DB_HOST: ${process.env.DB_HOST || 'NOT SET'}`);
+  }
   console.log('='.repeat(50));
 });
 
