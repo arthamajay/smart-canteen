@@ -2,6 +2,9 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 // Support both DATABASE_URL (Supabase connection string) and individual vars
+// Required for Supabase SSL — disable strict cert chain validation
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const poolConfig = process.env.DATABASE_URL
   ? {
       connectionString: process.env.DATABASE_URL,
