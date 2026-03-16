@@ -11,6 +11,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 // Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
 import OrderHistory from './pages/student/OrderHistory';
+import StudentProfile from './pages/student/StudentProfile';
 
 // Vendor Pages
 import VendorDashboard from './pages/vendor/VendorDashboard';
@@ -20,6 +21,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Common Components
 import PrivateRoute from './components/common/PrivateRoute';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 
 import './App.css';
 
@@ -51,6 +53,14 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route
+              path="/student/profile"
+              element={
+                <PrivateRoute allowedRoles={['student']}>
+                  <StudentProfile />
+                </PrivateRoute>
+              }
+            />
 
             {/* Vendor Routes */}
             <Route
@@ -73,6 +83,7 @@ function App() {
             />
 
             {/* Fallback */}
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
 

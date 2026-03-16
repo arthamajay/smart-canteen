@@ -42,8 +42,11 @@ api.interceptors.response.use(
   (error) => {
     console.error('API Error:', error.response?.data || error.message);
     
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
+    // Handle 401 Unauthorized — but NOT for password-change (wrong current password)
+    const url = error.config?.url || '';
+    const isPasswordChange = url.includes('change-password');
+
+    if (error.response?.status === 401 && !isPasswordChange) {
       // Clear auth data
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -157,3 +160,18 @@ export const getOrderDetails = async (orderId) => {
   const response = await api.get(`/orders/${orderId}`);
   return response.data;
 };
+
+// ============================================
+// Admin API
+// ============================================
+
+export const getAdminStats = () => api.get('/admin/stats').then(r => r.data);
+export const getAdminVendors = () => api.get('/admin/vendors').then(r => r.data);
+export const createVendor = (data) => api.post('/admin/vendors', data).then(r => r.data);
+export const toggleVendorStatus = (id) => api.put(`/admin/vendors/${id}/toggle`).then(r => r.data);
+export const getAdminStudents = () => api.get('/admin/students').then(r => r.data);
+export const getAdminItems = () => api.get('/admin/items').then(r => r.data);
+export const createAdminItem = (data) => api.post('/admin/items', data).then(r => r.data);
+export const updateAdminItem = (id, data) => api.put(`/admin/items/${id}`, data).then(r => r.data);
+export const deleteAdminItem = (id) => api.delete(`/admin/items/${id}`).then(r => r.data);
+export const getAnalytics = () => api.get('/admin/analytics').then(r => r.data);

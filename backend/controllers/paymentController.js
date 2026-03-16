@@ -54,8 +54,8 @@ const confirmPayment = async (req, res, next) => {
     const qrCodeData = order_id.toString();
     const qrCodeImage = await generateQRCode(qrCodeData);
 
-    // Update order status to PAID and store QR code data
-    const updatedOrder = await Order.updateStatus(order_id, 'PAID', qrCodeData);
+    // Update order status to PAID and store the full base64 QR image
+    const updatedOrder = await Order.updateStatus(order_id, 'PAID', qrCodeImage);
 
     res.status(200).json({
       success: true,

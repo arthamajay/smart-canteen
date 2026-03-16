@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { QrReader} from 'react-qr-reader';
 import { FaCamera, FaTimes, FaQrcode } from 'react-icons/fa';
 import './QRScanner.css';
@@ -6,35 +6,29 @@ import './QRScanner.css';
 const QRScanner = ({ onScan, onClose }) => {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState(null);
+  const scannedRef = useRef(false); // gate — fires only once per scan session
 
-  const handleScan = (result, error) => {
+  const handleScan = (result, err) => {
+    // Ignore if already handled this scan session
+    if (scannedRef.current) return;
+
     if (result) {
-      // Extract order ID from QR code data
+      scannedRef.current = true; // lock immediately so no more frames trigger this
       const orderId = result?.text || result;
       console.log('QR Code scanned:', orderId);
-      
-      // Call parent callback with order ID
-      onScan(orderId);
       setScanning(false);
+      onScan(orderId);
     }
 
-    if (error) {
-      console.error('QR Scan error:', error);
-      // Don't show error for every frame, only critical errors
-      if (error.name === 'NotAllowedError') {
-        setError('Camera permission denied. Please allow camera access.');
-      }
+    if (err && err.name === 'NotAllowedError') {
+      setError('Camera permission denied. Please allow camera access.');
     }
-  };
-
-  const handleError = (err) => {
-    console.error('Camera error:', err);
-    setError('Failed to access camera. Please check permissions.');
   };
 
   const startScanning = () => {
-    setScanning(true);
+    scannedRef.current = false; // reset gate for new session
     setError(null);
+    setScanning(true);
   };
 
   const stopScanning = () => {
@@ -72,7 +66,6 @@ const QRScanner = ({ onScan, onClose }) => {
             <QrReader
               constraints={{ facingMode: 'environment' }}
               onResult={handleScan}
-              onError={handleError}
               style={{ width: '100%' }}
             />
             <div className="scanner-overlay">

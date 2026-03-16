@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaUser, FaLock, FaSignInAlt } from 'react-icons/fa';
+import { FaUser, FaLock, FaSignInAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './AuthPages.css';
 
 const LoginPage = () => {
@@ -11,6 +11,7 @@ const LoginPage = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
 
   const handleChange = (e) => {
@@ -68,15 +69,20 @@ const LoginPage = () => {
             <label htmlFor="password">
               <FaLock /> Password
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-            />
+            <div className="input-with-eye">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+              />
+              <button type="button" className="eye-btn" onClick={() => setShowPassword(p => !p)}>
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <div className="form-options">
@@ -105,6 +111,10 @@ const LoginPage = () => {
               Sign up as Student
             </Link>
           </p>
+          <div className="login-hint">
+            <p><strong>Demo credentials:</strong></p>
+            <p>Admin: <code>admin</code> / <code>admin123</code></p>
+          </div>
         </div>
       </div>
     </div>

@@ -1,35 +1,39 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { FaQrcode, FaUser, FaSignOutAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaQrcode, FaSignOutAlt, FaCheckCircle, FaClock, FaKeyboard } from 'react-icons/fa';
 import QRScanner from '../../components/vendor/QRScanner';
 import VerifyResult from '../../components/vendor/VerifyResult';
 import { verifyOrder } from '../../services/api';
+import api from '../../services/api';
 import './VendorDashboard.css';
 
 const VendorDashboard = () => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [showScanner, setShowScanner] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [manualOrderId, setManualOrderId] = useState('');
+  const [stats, setStats] = useState({ todayConsumed: 0, pendingPickup: 0 });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get('/orders/vendor-stats');
+      setStats(res.data.data || { todayConsumed: 0, pendingPickup: 0 });
+    } catch {
+      // silently fail — stats are non-critical
+    }
+  };
 
   const handleScan = async (scannedData) => {
-    console.log('Scanned data:', scannedData);
-    
-    // Extract order ID from scanned data
     let orderId = scannedData;
-    
-    // If scanned data is a URL or complex string, extract the order ID
     if (typeof scannedData === 'string') {
-      // Try to extract number from string
-      const match = scannedData.match(/\d+/);
-      if (match) {
-        orderId = match[0];
-      }
+      const match = scannedData.match(/order[_-]?id[=:]?\s*(\d+)/i) || scannedData.match(/(\d+)/);
+      if (match) orderId = match[match.length - 1];
     }
-
     setShowScanner(false);
     await handleVerify(orderId);
   };
@@ -38,17 +42,10 @@ const VendorDashboard = () => {
     try {
       setLoading(true);
       setResult(null);
-
       const response = await verifyOrder(orderId);
-      
-      setResult({
-        success: true,
-        message: response.message,
-        data: response.data,
-      });
+      setResult({ success: true, message: response.message, data: response.data });
+      fetchStats();
     } catch (err) {
-      console.error('Verification error:', err);
-      
       setResult({
         success: false,
         message: err.response?.data?.message || err.response?.data?.error?.message || 'Verification failed',
@@ -67,116 +64,75 @@ const VendorDashboard = () => {
     }
   };
 
-  const handleVerifyAnother = () => {
-    setResult(null);
-  };
-
   if (result) {
     return (
       <div className="vendor-dashboard">
-        <div className="dashboard-header">
-          <h1>🍽️ Smart Canteen - Vendor</h1>
-          <button onClick={logout} className="btn btn-secondary">
-            <FaSignOutAlt /> Logout
-          </button>
+        <header className="vendor-header">
+          <div className="header-brand"><span>🍽️</span><div><h1>Smart Canteen</h1><p>Vendor Portal — {user.name}</p></div></div>
+          <button className="logout-btn" onClick={logout}><FaSignOutAlt /> Logout</button>
+        </header>
+        <div className="vendor-body">
+          <VerifyResult result={result} onVerifyAnother={() => setResult(null)} />
         </div>
-        <VerifyResult result={result} onVerifyAnother={handleVerifyAnother} />
       </div>
     );
   }
 
   return (
     <div className="vendor-dashboard">
-      <div className="dashboard-header">
-        <div className="header-left">
-          <h1>🍽️ Smart Canteen</h1>
-          <p className="welcome-text">Vendor Portal - {user.name}</p>
-        </div>
-        <div className="header-right">
-          <button onClick={() => navigate('/vendor/profile')} className="btn btn-secondary">
-            <FaUser /> Profile
-          </button>
-          <button onClick={logout} className="btn btn-danger">
-            <FaSignOutAlt /> Logout
-          </button>
-        </div>
-      </div>
+      <header className="vendor-header">
+        <div className="header-brand"><span>🍽️</span><div><h1>Smart Canteen</h1><p>Vendor Portal — {user.name}</p></div></div>
+        <button className="logout-btn" onClick={logout}><FaSignOutAlt /> Logout</button>
+      </header>
 
-      <div className="dashboard-content">
+      <div className="vendor-body">
+        {/* Stats */}
+        <div className="vendor-stats">
+          <div className="vstat-card green">
+            <FaCheckCircle className="vstat-icon" />
+            <div><p className="vstat-label">Consumed Today</p><p className="vstat-value">{stats.todayConsumed}</p></div>
+          </div>
+          <div className="vstat-card orange">
+            <FaClock className="vstat-icon" />
+            <div><p className="vstat-label">Pending Pickup</p><p className="vstat-value">{stats.pendingPickup}</p></div>
+          </div>
+        </div>
+
         {showScanner ? (
-          <QRScanner 
-            onScan={handleScan} 
-            onClose={() => setShowScanner(false)} 
-          />
+          <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
         ) : (
           <div className="verify-options">
-            <div className="option-card scan-option">
-              <div className="option-icon">
-                <FaQrcode />
-              </div>
+            <div className="option-card">
+              <div className="option-icon qr"><FaQrcode /></div>
               <h2>Scan QR Code</h2>
-              <p>Use your camera to scan the customer's QR code</p>
-              <button 
-                onClick={() => setShowScanner(true)} 
-                className="btn btn-primary btn-large"
-              >
-                <FaQrcode /> Open Scanner
+              <p>Use camera to scan the student's QR code</p>
+              <button className="opt-btn primary" onClick={() => setShowScanner(true)}>
+                <FaQrcode /> Open Camera
               </button>
             </div>
 
-            <div className="divider">
-              <span>OR</span>
-            </div>
+            <div className="option-divider"><span>OR</span></div>
 
-            <div className="option-card manual-option">
-              <div className="option-icon">
-                <FaCheckCircle />
-              </div>
-              <h2>Manual Entry</h2>
-              <p>Enter the order ID manually</p>
-              
+            <div className="option-card">
+              <div className="option-icon manual"><FaKeyboard /></div>
+              <h2>Enter Order ID</h2>
+              <p>Type the order ID manually</p>
               <form onSubmit={handleManualVerify} className="manual-form">
                 <input
-                  type="text"
+                  type="number"
                   value={manualOrderId}
-                  onChange={(e) => setManualOrderId(e.target.value)}
-                  placeholder="Enter Order ID"
-                  className="order-input"
+                  onChange={e => setManualOrderId(e.target.value)}
+                  placeholder="e.g. 42"
                   disabled={loading}
+                  min="1"
                 />
-                <button 
-                  type="submit" 
-                  className="btn btn-success btn-large"
-                  disabled={loading || !manualOrderId.trim()}
-                >
+                <button type="submit" className="opt-btn success" disabled={loading || !manualOrderId.trim()}>
                   {loading ? 'Verifying...' : 'Verify Order'}
                 </button>
               </form>
             </div>
           </div>
         )}
-
-        <div className="vendor-stats">
-          <div className="stat-card">
-            <div className="stat-icon success">
-              <FaCheckCircle />
-            </div>
-            <div className="stat-info">
-              <h3>Today's Orders</h3>
-              <p className="stat-value">0</p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon warning">
-              <FaTimesCircle />
-            </div>
-            <div className="stat-info">
-              <h3>Pending Pickup</h3>
-              <p className="stat-value">0</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
