@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaShoppingCart, FaHistory, FaUser, FaSignOutAlt, FaReceipt } from 'react-icons/fa';
+import { FaHistory, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import ItemList from '../../components/student/ItemList';
 import OrderForm from '../../components/student/OrderForm';
 import OrderConfirm from '../../components/student/OrderConfirm';
@@ -15,7 +15,6 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [orderData, setOrderData] = useState(null);
-  const [activeTab, setActiveTab] = useState('order'); // 'order' or 'browse'
 
   const handleAddToCart = (item, quantityChange) => {
     setCart(prevCart => {
@@ -87,7 +86,6 @@ const StudentDashboard = () => {
   const handleNewOrder = () => {
     setOrderData(null);
     setError(null);
-    setActiveTab('browse');
   };
 
   if (orderData) {

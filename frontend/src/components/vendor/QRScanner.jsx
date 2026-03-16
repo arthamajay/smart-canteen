@@ -44,7 +44,7 @@ const QRScanner = ({ onScan, onClose }) => {
         onScan(decodedText);
       },
       () => {} // ignore per-frame errors
-    ).catch((err) => {
+    ).catch(() => {
       setError('Camera access denied. Please allow camera permission.');
       setScanning(false);
     });
@@ -55,6 +55,7 @@ const QRScanner = ({ onScan, onClose }) => {
         scannerRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scanning]);
 
   return (

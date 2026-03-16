@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   FaUsers, FaUserTie, FaBoxes, FaChartBar, FaSignOutAlt,
-  FaPlus, FaEdit, FaToggleOn, FaToggleOff, FaTimes, FaCheck,
-  FaShoppingBag, FaRupeeSign, FaEye, FaTrash
+  FaPlus, FaEdit, FaToggleOn, FaToggleOff, FaTimes,
+  FaShoppingBag, FaRupeeSign, FaTrash
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import {

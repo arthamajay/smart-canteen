@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { FaArrowLeft, FaReceipt, FaCheckCircle, FaClock, FaTimesCircle, FaQrcode, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaReceipt, FaCheckCircle, FaClock, FaQrcode, FaTimes } from 'react-icons/fa';
 import { getOrderHistory } from '../../services/api';
 import './OrderHistory.css';
 
