@@ -32,7 +32,7 @@ const errorHandler = (err, req, res, next) => {
         break;
       default:
         statusCode = 500;
-        message = 'Database error occurred';
+        message = `Database error occurred (code: ${err.code})`;
     }
   }
 
@@ -41,9 +41,10 @@ const errorHandler = (err, req, res, next) => {
     success: false,
     error: {
       message: message,
-      ...(process.env.NODE_ENV === 'development' && { 
+      ...(process.env.NODE_ENV !== 'production' && { 
         stack: err.stack,
-        code: err.code 
+        code: err.code,
+        detail: err.detail
       })
     }
   });
