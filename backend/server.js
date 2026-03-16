@@ -23,6 +23,8 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (curl, Postman, Render health checks)
     if (!origin) return callback(null, true);
+    // Allow any netlify.app subdomain
+    if (origin.endsWith('.netlify.app')) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
   },
