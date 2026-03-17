@@ -111,10 +111,6 @@ const LoginPage = () => {
               Sign up as Student
             </Link>
           </p>
-          <div className="login-hint">
-            <p><strong>Demo credentials:</strong></p>
-            <p>Admin: <code>admin</code> / <code>admin123</code></p>
-          </div>
         </div>
       </div>
     </div>
