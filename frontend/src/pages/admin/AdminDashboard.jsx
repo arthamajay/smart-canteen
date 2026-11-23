@@ -59,7 +59,7 @@ const Overview = ({ stats, onTabChange }) => (
       <div className="recent-orders">
         <h3>Recent Orders</h3>
         <table className="data-table">
-          <thead><tr><th>Order ID</th><th>Student</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead>
+          <thead><tr><th>Order ID</th><th>Student</th><th>Amount</th><th>Status</th><th>Date &amp; Time</th></tr></thead>
           <tbody>
             {stats.recentOrders.map(o => (
               <tr key={o.order_id}>
@@ -67,7 +67,7 @@ const Overview = ({ stats, onTabChange }) => (
                 <td>{o.student_name}</td>
                 <td>₹{parseFloat(o.total_amount).toFixed(2)}</td>
                 <td><span className={`badge badge-${o.status.toLowerCase()}`}>{o.status}</span></td>
-                <td>{new Date(o.created_at).toLocaleTimeString()}</td>
+                <td>{new Date(o.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
               </tr>
             ))}
           </tbody>

@@ -82,10 +82,6 @@ const ItemList = ({ onAddToCart, cart }) => {
               )}
 
               <div className="item-footer">
-                <span className="item-stock">
-                  Stock: {item.stock_quantity}
-                </span>
-
                 {isOutOfStock ? (
                   <span className="out-of-stock-label">Out of Stock</span>
                 ) : cartQty > 0 ? (
