@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { generateToken } = require('../middleware/auth');
@@ -200,6 +201,36 @@ const login = async (req, res, next) => {
   }
 };
 
+// Logout — blacklist the current token so it can't be reused after logout
+const logout = async (req, res, next) => {
+  try {
+    if (req.token) {
+      // Decode token to get its original expiry (verifyToken already validated it)
+      const decoded = jwt.decode(req.token);
+      const expiresAt = decoded?.exp
+        ? new Date(decoded.exp * 1000)
+        : new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      // Add the token to the blacklist (sessions table)
+      await db.query(
+        `INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [req.user.user_id, req.token, expiresAt, req.ip, req.get('User-Agent')]
+      );
+
+      // Housekeeping: delete expired tokens so the table doesn't grow forever
+      await db.query('DELETE FROM sessions WHERE expires_at < NOW()');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get current user profile
 const getProfile = async (req, res, next) => {
   try {
@@ -347,9 +378,29 @@ const changePassword = async (req, res, next) => {
       [newPasswordHash, userId]
     );
 
+    // Security: Invalidate the current token so the old one can't be reused.
+    // Issue a fresh token so the user stays logged in without re-authenticating.
+    let newToken = null;
+    if (req.token) {
+      const decoded = jwt.decode(req.token);
+      const expiresAt = decoded?.exp
+        ? new Date(decoded.exp * 1000)
+        : new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      // Blacklist the old token
+      await db.query(
+        'INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, $3)',
+        [userId, req.token, expiresAt]
+      );
+
+      // Issue a new token with the same identity
+      newToken = generateToken(req.user);
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Password changed successfully'
+      message: 'Password changed successfully',
+      data: newToken ? { token: newToken } : undefined
     });
   } catch (error) {
     next(error);
@@ -359,6 +410,7 @@ const changePassword = async (req, res, next) => {
 module.exports = {
   registerStudent,
   login,
+  logout,
   getProfile,
   updateProfile,
   changePassword

@@ -69,7 +69,7 @@ const StudentDashboard = () => {
         quantity: item.quantity,
       }));
 
-      const orderResponse = await createOrder(user.user_id, orderItems);
+      const orderResponse = await createOrder(orderItems);
       const orderId = orderResponse.data.order_id;
 
       const paymentResponse = await confirmPayment(orderId);

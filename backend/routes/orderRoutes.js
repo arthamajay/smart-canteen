@@ -6,7 +6,7 @@ const {
   verifyOrder,
   getOrderHistory
 } = require('../controllers/orderController');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requireRole } = require('../middleware/auth');
 
 // POST /api/orders/create - Create new order (protected)
 router.post('/create', verifyToken, createOrder);
@@ -14,8 +14,8 @@ router.post('/create', verifyToken, createOrder);
 // GET /api/orders/history - Get order history (protected)
 router.get('/history', verifyToken, getOrderHistory);
 
-// GET /api/orders/vendor-stats - Today's vendor stats
-router.get('/vendor-stats', verifyToken, async (req, res, next) => {
+// GET /api/orders/vendor-stats - Today's vendor stats (vendor only)
+router.get('/vendor-stats', verifyToken, requireRole('vendor'), async (req, res, next) => {
   try {
     const db = require('../config/database');
     const [consumed, pending] = await Promise.all([
@@ -26,10 +26,10 @@ router.get('/vendor-stats', verifyToken, async (req, res, next) => {
   } catch(e) { next(e); }
 });
 
-// GET /api/orders/:id - Get order by ID
-router.get('/:id', getOrderById);
+// GET /api/orders/:id - Get order by ID (protected — ownership checked in controller)
+router.get('/:id', verifyToken, getOrderById);
 
-// POST /api/orders/verify - Verify order (for vendor)
-router.post('/verify', verifyOrder);
+// POST /api/orders/verify - Verify order (vendor only)
+router.post('/verify', verifyToken, requireRole('vendor'), verifyOrder);
 
 module.exports = router;

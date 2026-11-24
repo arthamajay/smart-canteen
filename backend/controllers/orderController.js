@@ -9,15 +9,13 @@ const { validateOrderItems, isValidStatusTransition } = require('../utils/valida
 // Create new order
 const createOrder = async (req, res, next) => {
   try {
-    const { user_id, items } = req.body;
+    const { items } = req.body;
+    // Use the authenticated user's ID from the JWT — NOT the client-supplied
+    // user_id. This prevents a student from creating orders under another
+    // user's account (Insecure Direct Object Reference vulnerability).
+    const user_id = req.user.user_id;
 
     // Validate input
-    if (!user_id) {
-      const error = new Error('user_id is required');
-      error.statusCode = 400;
-      throw error;
-    }
-
     const validation = validateOrderItems(items);
     if (!validation.valid) {
       const error = new Error(validation.message);
@@ -74,6 +72,15 @@ const getOrderById = async (req, res, next) => {
       const error = new Error('Order not found');
       error.statusCode = 404;
       throw error;
+    }
+
+    // Ownership check: students can only view their own orders.
+    // Vendors and admins can view any order (for verification / admin purposes).
+    if (req.user.role === 'student' && order.user_id !== req.user.user_id) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Access denied. You can only view your own orders.' }
+      });
     }
 
     res.status(200).json({

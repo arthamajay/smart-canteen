@@ -1,9 +1,12 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Support both DATABASE_URL (Supabase connection string) and individual vars
-// Required for Supabase SSL — disable strict cert chain validation
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+// Support both DATABASE_URL (Supabase connection string) and individual vars.
+// SSL is configured at the pool level below (rejectUnauthorized: false), which
+// scopes the relaxed certificate validation to the database connection only.
+// Do NOT set NODE_TLS_REJECT_UNAUTHORIZED globally — that disables TLS
+// certificate validation for ALL connections in the entire process (HTTPS API
+// calls, payment gateways, etc.), not just the database.
 
 const poolConfig = process.env.DATABASE_URL
   ? {

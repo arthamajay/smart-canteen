@@ -26,6 +26,23 @@ export const AuthProvider = ({ children }) => {
       if (token && userData) {
         try {
           const parsedUser = JSON.parse(userData);
+          // SECURITY: Override role & user_id from the JWT payload, NOT from
+          // localStorage. localStorage is client-editable via DevTools — a
+          // student can change their role to "admin" and access admin pages.
+          // The JWT is server-signed and cannot be forged without JWT_SECRET,
+          // so the role inside it is trustworthy.
+          try {
+            const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(base64));
+            parsedUser.role = payload.role;
+            parsedUser.user_id = payload.user_id;
+          } catch {
+            // Token is malformed — treat as unauthenticated
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setLoading(false);
+            return;
+          }
           setUser(parsedUser);
           api.setAuthToken(token);
         } catch (error) {
@@ -108,7 +125,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Blacklist the token on the backend so it can't be reused after logout
+    try {
+      await api.logout();
+    } catch {
+      // Proceed with local logout even if the API call fails
+    }
+
     // Clear localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');

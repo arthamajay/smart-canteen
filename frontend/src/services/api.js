@@ -57,6 +57,19 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
+    // Handle 403 Forbidden — user's role doesn't permit this resource.
+    // Catches localStorage role manipulation: the backend rejects based on
+    // the JWT role (not the editable localStorage role), and we redirect to
+    // the Unauthorized page instead of rendering a broken dashboard.
+    // Auth endpoints (login/register) are excluded because they return 403
+    // for inactive accounts and should show their own error message.
+    if (error.response?.status === 403) {
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
+      if (!isAuthEndpoint && window.location.pathname !== '/unauthorized') {
+        window.location.href = '/unauthorized';
+      }
+    }
     
     return Promise.reject(error);
   }
@@ -74,6 +87,14 @@ export const registerStudent = async (formData) => {
 export const login = async (username, password) => {
   const response = await api.post('/auth/login', { username, password });
   return response.data;
+};
+
+export const logout = async () => {
+  try {
+    await api.post('/auth/logout');
+  } catch {
+    // Proceed with local logout even if the API call fails
+  }
 };
 
 export const getProfile = async () => {
@@ -109,11 +130,8 @@ export const getItemById = async (itemId) => {
 // Orders API
 // ============================================
 
-export const createOrder = async (userId, items) => {
-  const response = await api.post('/orders/create', {
-    user_id: userId,
-    items: items,
-  });
+export const createOrder = async (items) => {
+  const response = await api.post('/orders/create', { items });
   return response.data;
 };
 

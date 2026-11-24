@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FaArrowLeft, FaUser, FaEnvelope, FaPhone, FaGraduationCap, FaLock, FaEdit, FaCheck, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { updateProfile, changePassword } from '../../services/api';
+import { updateProfile, changePassword, setAuthToken } from '../../services/api';
 import { toast } from 'react-toastify';
 import './StudentProfile.css';
 
@@ -60,7 +60,13 @@ const StudentProfile = () => {
     }
     setSavingPw(true);
     try {
-      await changePassword(pwForm);
+      const res = await changePassword(pwForm);
+      // Update the stored token — the backend invalidates the old one for
+      // security and issues a fresh token so the user stays logged in.
+      if (res?.data?.token) {
+        localStorage.setItem('token', res.data.token);
+        setAuthToken(res.data.token);
+      }
       toast.success('Password changed successfully');
       setPwForm({ current_password: '', new_password: '', confirm_password: '' });
     } catch (err) {

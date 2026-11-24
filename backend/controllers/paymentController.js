@@ -22,6 +22,14 @@ const confirmPayment = async (req, res, next) => {
       throw error;
     }
 
+    // Ownership check: only the order owner can confirm payment for it.
+    if (order.user_id !== req.user.user_id) {
+      return res.status(403).json({
+        success: false,
+        error: { message: 'Access denied. You can only pay for your own orders.' }
+      });
+    }
+
     // Check if order is in CREATED status
     if (order.status !== 'CREATED') {
       const error = new Error(`Cannot process payment. Order status is ${order.status}`);
@@ -85,6 +93,18 @@ const getPaymentByOrderId = async (req, res, next) => {
       const error = new Error('Payment not found for this order');
       error.statusCode = 404;
       throw error;
+    }
+
+    // Ownership check: students can only view their own payments.
+    // Vendors and admins can view any payment (verification / admin purposes).
+    if (req.user.role === 'student') {
+      const order = await Order.getById(order_id);
+      if (!order || order.user_id !== req.user.user_id) {
+        return res.status(403).json({
+          success: false,
+          error: { message: 'Access denied. You can only view your own payments.' }
+        });
+      }
     }
 
     res.status(200).json({

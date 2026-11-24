@@ -5,6 +5,14 @@ const db = require('../config/database');
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
+// Security: Fail fast in production if JWT_SECRET is not set.
+// A missing secret means anyone reading the source code can forge valid JWT
+// tokens and impersonate any user.
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable must be set in production.');
+  process.exit(1);
+}
+
 // Generate JWT token
 const generateToken = (user) => {
   return jwt.sign(
@@ -34,8 +42,27 @@ const verifyToken = async (req, res, next) => {
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-    // Verify token
+    // Verify token signature and expiry
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Check if token has been revoked (blacklisted on logout / password change).
+    // Requires the sessions table from auth_schema.sql.
+    try {
+      const revoked = await db.query(
+        'SELECT 1 FROM sessions WHERE token = $1 LIMIT 1',
+        [token]
+      );
+      if (revoked.rows.length > 0) {
+        return res.status(401).json({
+          success: false,
+          error: { message: 'Token has been revoked. Please login again.' }
+        });
+      }
+    } catch (dbError) {
+      // If the sessions table doesn't exist yet, log a warning but don't
+      // block authentication — run auth_schema.sql to enable token revocation.
+      console.warn('Sessions table not found — token revocation inactive. Run auth_schema.sql.');
+    }
     
     // Check if user still exists and is active
     const query = `
@@ -53,8 +80,9 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    // Attach user to request
+    // Attach user and raw token to request
     req.user = result.rows[0];
+    req.token = token; // Stored for blacklisting on logout / password change
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
